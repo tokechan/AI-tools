@@ -41,7 +41,7 @@ Codex must **never**:
 - The user must directly write the intended command or action
 - Example: `"Yes, run: rm -rf dist"`
 
-> ⚠️ Vague statements like "go ahead" or "sounds good" are **NOT** approval.
+> Vague statements like "go ahead" or "sounds good" are **NOT** approval.
 
 ---
 
@@ -152,10 +152,10 @@ Codex must follow this order of precedence (highest to lowest):
 
 This global file defines:
 
-- ✅ Universal safety restrictions
-- ✅ Core quality expectations
-- ✅ Minimal collaboration rules
-- ✅ Lightweight testing philosophy
-- ✅ A clear hierarchy for overrides
+- Universal safety restrictions
+- Core quality expectations
+- Minimal collaboration rules
+- Lightweight testing philosophy
+- A clear hierarchy for overrides
 
 > **Note:** Project-specific conventions, commit rules, TDD styles, or architectural guidelines must be defined in each project's `AGENTS.md`.
