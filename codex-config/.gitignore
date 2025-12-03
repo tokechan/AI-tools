@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# 絶対に含めてはいけない機密ファイル（念のため）
+auth.json
+history.jsonl
+sessions/
+log/
+config.toml
+*.log
+
