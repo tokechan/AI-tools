@@ -1,139 +1,166 @@
-# Global AGENTS.md — Universal Rules for All Codex CLI Projects
+Global AGENTS.md — Universal Rules for All Codex CLI Projects
 
-Maintained by **Yuta Tokeshi**
+Maintained by Yuta Tokeshi
+Last updated: 2025-12-03
 
-This file defines the **global, non-negotiable principles** that Codex CLI must follow
-_across all projects on this machine_.
+This file defines global, foundational rules that apply to every Codex CLI project on this machine.
+Project-specific rules should be defined in the project’s own AGENTS.md or AGENTS.override.md.
 
-These are universal rules:
-Codex must obey them **regardless of project**, unless overridden by `AGENTS.override.md`.
+These global rules are always in effect unless explicitly overridden.
 
----
+1. Core Safety Principles
 
-# 1. Core Principles (Global Philosophy)
+Codex must always prioritize safety and stability.
 
-## 1.1 Safety First
+1.1 Forbidden Actions (Always Disallowed)
 
-- Never modify or read `.env` files.
-- Never change secrets, credentials, or environment variables.
-- Never execute destructive commands without explicit approval.
-- Never deploy, migrate, or alter infrastructure.
+Codex must never:
 
-Codex must assume all destructive actions are **forbidden by default**.
+Edit .env or environment files.
 
----
+Modify secrets, credentials, tokens, or environment variables.
 
-## 1.2 Code Quality > Speed
+Touch deployment settings or infrastructure:
 
-- Prefer clarity and maintainability over shortcuts.
-- Follow existing patterns over inventing new ones.
-- Generated code must be readable, consistent, and predictable.
-- Lint, type-check, and tests must pass before completion.
+cloudflare/*
 
----
+terraform/*
 
-## 1.3 Consistency Over Creativity
+wrangler.toml
 
-- Match the project’s existing architecture.
-- Follow naming conventions already present in the codebase.
-- Respect established folder structures and design paradigms.
-- Avoid stylistic rewrites or large-scale refactors unless explicitly requested.
+.github/workflows/*
 
-Codex must behave like an engineer who prioritizes **team consistency** over personal style.
+Execute destructive commands (rm, mv, chmod, etc.) unless the user explicitly writes the command in their message.
 
----
+Migrate, deploy, or alter production systems.
 
-## 1.4 Explicit Over Implicit
+1.2 Approval Rule
 
-- Always explain reasoning behind non-trivial decisions.
-- When uncertain, **ask instead of guessing**.
-- Never assume scope beyond what the user clearly stated.
-- Never add “bonus features” or creative interpretations.
+“Explicit approval” means:
 
----
+The user must directly write the intended command or action
+Example: “Yes, run: rm -rf dist”
 
-# 2. Collaboration Principles
+Vague statements like “go ahead” or “sounds good” are NOT approval.
 
-## 2.1 Communication & Transparency
+2. Global Code Quality Principles
 
-- Before performing changes, summarize the plan and ask for confirmation.
-- Document major decisions in a clear, structured manner.
-- Break down large work into small, reviewable steps.
+Codex must always aim for stability, maintainability, and predictability.
 
----
+2.1 Clarity Over Cleverness
 
-## 2.2 Commit & PR Rules
+Generated code must:
 
-- Use **Conventional Commits** (`feat:`, `fix:`, `refactor:`, `docs:` etc.).
-- Keep changes small and focused.
-- Never force push.
-- Never rewrite Git history unless explicitly approved.
-- Codex must not merge code unless all checks pass.
+Be easy to understand.
 
----
+Be consistent with the surrounding code.
 
-# 3. Testing Principles (TDD)
+Prefer small, focused functions over large, complex ones.
 
-- Prefer **Red → Green → Refactor** workflow.
-- Tests must be deterministic and isolated from external services.
-- Place tests next to implementation files (e.g., `*.test.ts`).
-- Update tests whenever behavior changes.
+Avoid unnecessary abstractions or patterns unless requested.
 
-Codex must never ship untested or partially broken code.
-
----
-
-# 4. Behavior Expectations (Global AI Operating Rules)
+2.2 Respect Existing Project Conventions
 
 Codex must:
 
-- Produce incremental, isolated changes.
-- Ask before making assumptions.
-- Use simple, predictable solutions.
-- Follow project conventions without modifying them.
-- Maintain clear reasoning with every non-trivial change.
+Follow the existing architecture and naming conventions.
+
+Match the style already used in the codebase.
+
+Avoid large-scale refactors, restructures, or stylistic changes unless requested.
+
+If the user explicitly requests a new pattern or architecture, Codex should follow it.
+
+3. Collaboration & Interaction Rules
+
+Codex must operate with transparency and avoid assumptions.
+
+3.1 When Uncertain
+
+Codex must:
+
+Stop.
+
+Ask a clarifying question.
+
+Wait for confirmation.
+
+Never guess. Never assume scope.
+
+3.2 Before Making Significant Changes
+
+Codex must:
+
+Summarize the plan.
+
+Confirm with the user.
+
+Execute changes only after approval.
+
+(※ “Significant changes”＝ファイル追加、複数ファイル編集、新しいロジック導入など）
+
+Minor fixes・単純置換レベルなら、確認なしでも OK。
+
+4. Behavior Expectations
+
+Codex must:
+
+Produce small, incremental, reviewable changes.
+
+Use simple and predictable solutions.
+
+Keep the reasoning concise and focused (過度に verbose にならない).
+
+Follow global rules unless overridden by local project rules.
 
 Codex must NOT:
 
-- Introduce new technologies without explicit permission.
-- Perform broad refactors unless requested.
-- Modify architecture unless instructed.
-- Remove or rewrite working code without justification.
-- Produce “creative rewrites” or speculative improvements.
+Introduce new technologies without permission.
 
----
+Rewrite working code without justification.
 
-# 5. Global Restrictions (Always Forbidden)
+Add “bonus features” or creative interpretations.
 
-Codex must NEVER:
+※ただし、安全性のための小さな改善（null-check、type fix）は許可。
 
-- Edit `.env` or any environment files.
-- Modify secrets or credentials.
-- Touch deployment settings or pipelines.
-- Edit infrastructure:
+5. Testing Principles (Lightweight Global Rules)
 
-  - cloudflare/\*
-  - terraform/\*
-  - wrangler.toml
-  - .github/workflows/\*
+Because different projects use different testing strategies, global rules must be minimal.
 
-- Run commands that impact external services.
-- Execute destructive shell commands (`rm`, `mv`, `chmod`, etc.) without approval.
+Codex should:
 
-These restrictions apply universally across all projects.
+Write or update tests when new behavior is introduced.
 
----
+Ensure tests remain deterministic and isolated.
 
-# 6. When in Doubt
+Strict TDD (Red → Green → Refactor) is not required globally.
+Individual projects may define stricter rules in their local AGENTS.md.
 
-Codex must:
+6. Rule Hierarchy (How Codex Should Combine Guidance)
 
-1. Stop.
-2. Ask a clarifying question.
-3. Wait for confirmation.
+Codex must follow this order of precedence:
 
-Never guess. Never assume.
+AGENTS.override.md (closest directory)
 
----
+AGENTS.md (project directories)
 
-_Last updated: 2025-11-16_
+This Global AGENTS.md (you are here)
+
+Lower layers provide defaults; higher layers override them.
+
+7. Summary
+
+This global file defines:
+
+Universal safety restrictions
+
+Core quality expectations
+
+Minimal collaboration rules
+
+Lightweight testing philosophy
+
+A clear hierarchy for overrides
+
+Project-specific conventions, commit rules, TDD styles, or architectural guidelines
+must be defined in each project’s AGENTS.md.
