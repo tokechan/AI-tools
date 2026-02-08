@@ -1,161 +1,81 @@
-# Global AGENTS.md — Universal Rules for All Codex CLI Projects
+# AGENTS.md
 
-**Maintained by:** Yuta Tokeshi  
-**Last updated:** 2025-12-03
+## 目的
+このフォルダ配下で作業するエージェントの共通基盤ルールを定義する。
+各プロジェクトの `AGENTS.md` には、ここからの差分だけを書く。
 
-This file defines global, foundational rules that apply to every Codex CLI project on this machine.
-Project-specific rules should be defined in the project's own `AGENTS.md` or `AGENTS.override.md`.
+## 適用範囲
+- この `AGENTS.md` は、このフォルダ配下のデフォルトルールとして適用する。
+- より近い階層の `AGENTS.md` / `AGENTS.override.md` がある場合は、そちらを優先する。
 
-> These global rules are always in effect unless explicitly overridden.
+## 作業方針
+- 基本フローは「調査 -> 最小変更 -> 検証 -> 説明」
+- 不明点がある場合は推測で進めず、状況を共有して確認する
+- 変更は小さく、1つの意図に絞る
+- 変更前後の差分と理由を説明する
+- "動く" を確認するまで終わりにしない（テスト or 最低限の実行確認）
 
----
+## Git管理下での初期確認
+Gitリポジトリで作業する場合のみ、着手時に以下を確認する。
+- `git status`
+- `git diff`
+- `git log -n 20`
 
-## 1. Core Safety Principles
+## 安全ガードレール
+- `.env` や秘密情報（認証情報、トークン、鍵など）は編集しない
+- デプロイ/インフラ設定は、明示的な依頼がある場合のみ変更する
+- ユーザーが明記していない破壊的操作は実行しない
+- ログや出力で機密情報を露出しない
 
-Codex must always prioritize safety and stability.
+## コマンド実行ポリシー
 
-### 1.1 Forbidden Actions (Always Disallowed)
+### Auto-allow（確認なしで実行OK: 読み取り・軽量確認）
+- PowerShell: `Get-ChildItem`, `Get-Content`, `Select-String`, `Test-Path`, `Resolve-Path`
+- Git: `git status`, `git diff`, `git log`, `git show`
+- Node: `node -v`, `npm -v`, `pnpm -v`（バージョン確認のみ）
+- 検証系: `npm run test`, `npm run lint`, `npm run typecheck`, `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`
 
-Codex must **never**:
+### Ask（実行前に必ず確認: 変更や重い実行を伴う可能性）
+- Git: `git checkout`, `git switch`, `git restore`, `git commit`
+- Node: `npm install`, `pnpm install`
+- Node: 上記の検証系以外の `npm run *`, `pnpm run *`
+- PowerShell: 書き込みを伴う可能性があるもの全般（`Out-File`, `>` `>>` を含む）
+- "時間がかかる/出力が大量" になりそうなもの（例: 大規模な再帰探索）
+- ネットワークアクセスが絡むコマンド
 
-- Edit `.env` or environment files
-- Modify secrets, credentials, tokens, or environment variables
-- Touch deployment settings or infrastructure:
-  - `cloudflare/*`
-  - `terraform/*`
-  - `wrangler.toml`
-  - `vercel.json`
-  - `netlify.toml`
-  - `.github/workflows/*`
-  - `.gitlab-ci.yml`
-  - `Jenkinsfile`
-  - `azure-pipelines.yml`
-- Execute destructive commands (`rm`, `mv`, `chmod`, etc.) unless the user explicitly writes the command in their message
-- Migrate, deploy, or alter production systems
-- Log or expose sensitive information
+### Deny（原則禁止: 破壊的・危険）
+- PowerShell: `Remove-Item`, `Move-Item`, `Rename-Item`, `Set-Content`, `Add-Content`, `Set-ItemProperty`
+- Git: `git reset --hard`, `git clean -fdx`, `git push -f`
+- 外部取得して即実行するもの: `curl | sh`, `irm | iex`, `Invoke-Expression` など
+- ただし、ユーザーが実行コマンドを明記して依頼した場合のみ実行可
 
-### 1.2 Approval Rule
+## AGENTS / Skill 設計方針
+- このルート `AGENTS.md` には「必須ルール・禁止事項・承認条件」のみを置く
+- 各プロジェクト `AGENTS.md` には次の差分のみを置く
+  - プロジェクト固有コマンド
+  - 例外ルール
+  - Skill の起動条件（いつ使うか）
+- 手順詳細は `skills/<name>/SKILL.md` または `.cursor/skills/<name>/SKILL.md` に分離する
+- `AGENTS.md` は原則 300 行以内に保つ。超える見込みなら Skill に分割する
 
-**"Explicit approval"** means:
+## プロジェクトAGENTSの最小テンプレート
+- 目的（共通基盤を継承し差分だけ書くこと）
+- 適用範囲
+- プロジェクト固有運用（必要最小限）
+- プロジェクトコマンド
+- Skill運用（一覧の場所と更新ルール）
+- 更新日
 
-- The user must directly write the intended command or action
-- Example: `"Yes, run: rm -rf dist"`
+## 変更時チェックリスト
+- [ ] 変更の目的が1文で言える
+- [ ] 影響範囲（触ったファイル/機能）を列挙した
+- [ ] 検証（テスト or 動作確認）をした
+- [ ] リスク/代替案があれば書いた
 
-> Vague statements like "go ahead" or "sounds good" are **NOT** approval.
+## ルール優先順位
+1. 最も近い `AGENTS.override.md`
+2. 最も近い `AGENTS.md`
+3. このルート `AGENTS.md`
 
----
-
-## 2. Global Code Quality Principles
-
-Codex must always aim for stability, maintainability, and predictability.
-
-### 2.1 Clarity Over Cleverness
-
-Generated code must:
-
-- Be easy to understand
-- Be consistent with the surrounding code
-- Prefer small, focused functions over large, complex ones
-- Avoid unnecessary abstractions or patterns unless requested
-
-### 2.2 Respect Existing Project Conventions
-
-Codex must:
-
-- Follow the existing architecture and naming conventions
-- Match the style already used in the codebase
-- Avoid large-scale refactors, restructures, or stylistic changes unless requested
-
-> If the user explicitly requests a new pattern or architecture, Codex should follow it.
-
----
-
-## 3. Collaboration & Interaction Rules
-
-Codex must operate with transparency and avoid assumptions.
-
-### 3.1 When Uncertain
-
-Codex must:
-
-1. **Stop**
-2. **Ask** a clarifying question
-3. **Wait** for confirmation
-
-> Never guess. Never assume scope.
-
-### 3.2 Before Making Significant Changes
-
-Codex must:
-
-1. Summarize the plan
-2. Confirm with the user
-3. Execute changes only after approval
-
-**What counts as "Significant changes":**
-- Adding new files
-- Editing multiple files
-- Introducing new logic or patterns
-
-> Minor fixes and simple replacements do not require confirmation.
-
----
-
-## 4. Behavior Expectations
-
-### Codex MUST:
-
-- Produce small, incremental, reviewable changes
-- Use simple and predictable solutions
-- Keep reasoning concise and focused
-- Follow global rules unless overridden by local project rules
-
-### Codex must NOT:
-
-- Introduce new technologies or dependencies without permission
-- Rewrite working code without justification
-- Add "bonus features" or creative interpretations
-
-> Exception: Small safety improvements (null-checks, type fixes) are permitted.
-
----
-
-## 5. Testing Principles (Lightweight Global Rules)
-
-Because different projects use different testing strategies, global rules must be minimal.
-
-Codex should:
-
-- Write or update tests when new behavior is introduced
-- Ensure tests remain deterministic and isolated
-
-> Strict TDD (Red → Green → Refactor) is **not** required globally.  
-> Individual projects may define stricter rules in their local `AGENTS.md`.
-
----
-
-## 6. Rule Hierarchy
-
-Codex must follow this order of precedence (highest to lowest):
-
-| Priority | Source | Description |
-|----------|--------|-------------|
-| 1 (Highest) | `AGENTS.override.md` | Closest directory override |
-| 2 | `AGENTS.md` | Project-level rules |
-| 3 (Lowest) | **This Global AGENTS.md** | Universal defaults |
-
-> Lower layers provide defaults; higher layers override them.
-
----
-
-## 7. Summary
-
-This global file defines:
-
-- Universal safety restrictions
-- Core quality expectations
-- Minimal collaboration rules
-- Lightweight testing philosophy
-- A clear hierarchy for overrides
-
-> **Note:** Project-specific conventions, commit rules, TDD styles, or architectural guidelines must be defined in each project's `AGENTS.md`.
+## 更新
+- Last updated: 2026-02-06
